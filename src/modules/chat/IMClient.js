@@ -5,12 +5,13 @@ import IMEvent from "./IMEvent.js"
  * 通讯客户端
  */
 class IMClient {
-  constructor(url) {
+  constructor(url, onMyMessage) {
       this._url = url;
       this._autoConnect = true;
       this._handlers = {};
       this._DataPacketQueue = [];
       this._isOpened = false;
+      this.onMyMessage = this.onMyMessage;
 
       this.addEventListener(IMEvent.CONNECTED, () => {
         this.serverOnConnected();
@@ -34,6 +35,9 @@ class IMClient {
 
       this._socket.onmessage = (evt) => {
         this.onMessage(evt.data);
+        if(this.onMyMessage){
+          this.onMyMessage(evt.data);
+        }
       }
       this._socket.onopen = (ws) => {
         this.onOpen(ws);
@@ -82,11 +86,12 @@ class IMClient {
 
   // 向服务器发送数据包
   sendDataPacket(dataPacket) {
-    if (this._isOpened) {
-      this._socket.send(dataPacket.rawMessage);
-    } else {
-      this._DataPacketQueue.push(dataPacket);
-    }
+    // if (this._isOpened) {
+    //   this._socket.send(dataPacket.rawMessage);
+    // } else {
+    //   this._DataPacketQueue.push(dataPacket);
+    // }
+    this._socket.send(dataPacket)
   }
 
   /**

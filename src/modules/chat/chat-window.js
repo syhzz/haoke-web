@@ -31,10 +31,13 @@ class Chat extends React.Component {
     let {to_user,from_user,avatar} = this.props.chatInfo;
     let pdata = {
       id: this.guid(),
-      from_user: from_user,
+      // from_user: from_user,
       to_user: to_user,
-      avatar: avatar,
-      chat_msg: this.state.msgContent
+      from: {
+        id: this.state.fromId
+      }
+      // avatar: avatar,
+      msg: this.state.msgContent
     }
     let newList = [...this.state.infos];
     newList.push(pdata);
@@ -46,16 +49,25 @@ class Chat extends React.Component {
   }
   componentDidMount = () => {
     let {to_user,from_user} = this.props.chatInfo;
-    axios.post('/chats/info',{
-      to_user: to_user,
-      from_user: from_user
+    // axios.post('/chats/info',{
+    //   to_user: to_user,
+    //   from_user: from_user
+    // })
+    axios.get('http://127.0.0.1：18081/message',{
+      params:{
+        toId: to_user,
+        fromId: from_user
+      }
     }).then(data=>{
       this.setState({
         infos: data.data.list,
         isLoading: true,
-        client: handle(localStorage.getItem('uid'),(data)=>{
+        fromId: from_user,
+        // client: handle(localStorage.getItem('uid'),(data)=>{
+        client: handle(from_user,(data)=>{
           let newList = [...this.state.infos];
-          newList.push(JSON.parse(data.content));
+          newList.push(JSON.parse(data));
+          // newList.push(JSON.parse(data.content));
           this.setState({
             infos: newList
           })
@@ -63,6 +75,17 @@ class Chat extends React.Component {
       });
     })
   }
+  if(this.state.isLoading){
+    let currentUser = parseInt(this.state.fromId, 10);
+    infoList = this.state.infos.map(item=>{
+      return (
+        <li key={item.id} className={currentUser===item.from.id?'chat-info-right':'chat-info-left'}><img src="http://itcast-haoke.oss-cn-qingdao.aliyuncs.com/images/2018/12/08/15442410962743524.jpg"alt=""/>
+        <span>{item.msg}</span>
+        </li>
+      )
+    })
+  }
+  
   render() {
     let {username} = this.props.chatInfo;
     let infoList = null;
